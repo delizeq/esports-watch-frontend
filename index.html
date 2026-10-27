@@ -1,0 +1,67 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080e1c">
+  <meta name="description" content="Esports Watch — матчі, команди та турніри з кіберспорту.">
+  <title>Esports Watch — кіберспорт</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="logo" href="#">
+      <span class="logo-icon">E</span>
+      <span>Esports <b>Watch</b></span>
+    </a>
+
+    <nav>
+      <a class="active" href="#matches">Матчі</a>
+      <a href="#matches">Турніри</a>
+      <a href="#matches">Команди</a>
+      <a href="#matches">Ігри</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-content">
+        <span class="eyebrow">ESPORTS • LIVE UPDATES</span>
+        <h1>Слідкуй за світом <span>кіберспорту</span></h1>
+        <p>Матчі, турніри та команди — усе в одному місці.</p>
+      </div>
+      <div class="hero-decoration" aria-hidden="true">GG</div>
+    </section>
+
+    <section class="matches-section" id="matches">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">РОЗКЛАД</span>
+          <h2>Матчі</h2>
+          <p>Знайди потрібний матч і переглянь його деталі.</p>
+        </div>
+        <span class="live-indicator"><span></span> Оновлення з API</span>
+      </div>
+
+      <div class="filters">
+        <label for="date">Фільтр за датою</label>
+        <div class="filter-controls">
+          <input type="date" id="date">
+          <button id="reset" type="button">Показати всі</button>
+        </div>
+      </div>
+
+      <p id="error" class="message" role="status" aria-live="polite"></p>
+      <div id="matches" class="matches-list"></div>
+    </section>
+  </main>
+
+  <footer>
+    <a class="logo footer-logo" href="#">Esports <b>Watch</b></a>
+    <p>Кіберспорт — ближче, ніж здається.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

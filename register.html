@@ -1,0 +1,155 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Реєстрація — Esports Watch</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <a class="logo" href="index.html">
+      <span class="logo-icon">E</span>
+      <span>Esports <b>Watch</b></span>
+    </a>
+
+    <nav>
+      <a href="index.html">Матчі</a>
+      <a href="profile.html">Мій профіль</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="auth-section">
+      <div class="auth-container">
+        <h2>Реєстрація</h2>
+
+        <form id="register-form">
+
+          <label for="username">Логін *</label>
+          <input type="text" id="username"
+                 maxlength="150" autocomplete="username" required>
+
+          <label for="first-name">Ім'я</label>
+          <input type="text" id="first-name" maxlength="150">
+
+          <label for="last-name">Прізвище</label>
+          <input type="text" id="last-name" maxlength="150">
+
+          <label for="email">Email *</label>
+          <input type="email" id="email"
+                 maxlength="254" autocomplete="email" required>
+
+          <label for="password">Пароль *</label>
+          <input type="password" id="password"
+                 minlength="8" autocomplete="new-password" required>
+
+          <label for="confirm-password">Підтвердження пароля *</label>
+          <input type="password" id="confirm-password"
+                 minlength="8" autocomplete="new-password" required>
+
+          <button type="submit">Зареєструватися</button>
+        </form>
+
+        <p id="register-error" role="alert"></p>
+
+        <p>
+          Уже маєш акаунт?
+          <a id="login-link" href="login.html">Увійти</a>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script src="auth.js"></script>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const destination = params.get('next') === 'profile.html'
+      ? 'profile.html'
+      : 'index.html';
+
+    document.getElementById('login-link').href =
+      `login.html?next=${encodeURIComponent(destination)}`;
+
+    async function checkExistingLogin() {
+      try {
+        const response = await authenticatedFetch('/auth/me/');
+        if (response.ok) {
+          window.location.replace(destination);
+        }
+      } catch {
+        // Користувач не авторизований.
+      }
+    }
+
+    document.getElementById('register-form').addEventListener(
+      'submit',
+      async event => {
+        event.preventDefault();
+
+        const username = document.getElementById('username').value.trim();
+        const firstName = document.getElementById('first-name').value.trim();
+        const lastName = document.getElementById('last-name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmation =
+          document.getElementById('confirm-password').value;
+
+        const errorBox = document.getElementById('register-error');
+        errorBox.textContent = '';
+
+        if (password !== confirmation) {
+          errorBox.textContent = 'Паролі не збігаються.';
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            'http://127.0.0.1:8000/auth/register/',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                username,
+                first_name: firstName,
+                last_name: lastName,
+                email,
+                password,
+                password_confirmation: confirmation
+              })
+            }
+          );
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            const details = data.details || {};
+            const messages = Object.entries(details)
+              .flatMap(([field, errors]) =>
+                errors.map(message => `${field}: ${message}`)
+              );
+
+            throw new Error(
+              messages.join('; ') || data.error || 'Помилка реєстрації.'
+            );
+          }
+
+          await login(username, password);
+          window.location.replace(destination);
+
+        } catch (error) {
+          errorBox.textContent = error.message;
+        }
+      }
+    );
+
+    checkExistingLogin();
+  </script>
+
+</body>
+</html>

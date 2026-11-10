@@ -7,10 +7,13 @@ const STATUS_LABELS = {
   finished: 'Завершено'
 };
 
+// ---------- Запити до Django API ----------
+
 async function getJson(path) {
   const response = await fetch(`${API}${path}`);
 
   let data;
+
   try {
     data = await response.json();
   } catch {
@@ -24,6 +27,8 @@ async function getJson(path) {
   return data;
 }
 
+// ---------- Створення HTML елементів ----------
+
 function createElement(tag, className, text = '') {
   const element = document.createElement(tag);
   element.className = className;
@@ -31,16 +36,21 @@ function createElement(tag, className, text = '') {
   return element;
 }
 
+// ---------- Картки матчів ----------
+
 function createMatchCard(match, teamNames, tournamentNames, gameNames) {
   const card = createElement('article', 'match-card');
 
   const teams = createElement('div', 'teams');
+
   const team1 = createElement(
     'span',
     'team',
     teamNames[match.team1_id] || `Команда ${match.team1_id}`
   );
+
   const vs = createElement('span', 'vs', 'VS');
+
   const team2 = createElement(
     'span',
     'team',
@@ -50,6 +60,7 @@ function createMatchCard(match, teamNames, tournamentNames, gameNames) {
   teams.append(team1, vs, team2);
 
   const info = createElement('div', 'match-info');
+
   const tournament = createElement(
     'div',
     'info',
@@ -60,6 +71,7 @@ function createMatchCard(match, teamNames, tournamentNames, gameNames) {
   const game = createElement('div', 'info', `🎮 ${gameName}`);
 
   const date = new Date(match.start_time);
+
   const dateText = Number.isNaN(date.getTime())
     ? match.start_time
     : date.toLocaleString('uk-UA', {
@@ -68,9 +80,11 @@ function createMatchCard(match, teamNames, tournamentNames, gameNames) {
       });
 
   const time = createElement('div', 'info', `🕒 ${dateText}`);
+
   info.append(tournament, game, time);
 
   const statusLabel = STATUS_LABELS[match.status] || match.status;
+
   const status = createElement(
     'span',
     `match-status ${match.status}`,
@@ -78,8 +92,11 @@ function createMatchCard(match, teamNames, tournamentNames, gameNames) {
   );
 
   card.append(teams, info, status);
+
   return card;
 }
+
+// ---------- Завантаження матчів ----------
 
 async function loadMatches(date = '') {
   const list = document.getElementById('matches');
@@ -95,13 +112,20 @@ async function loadMatches(date = '') {
       getJson('/games/')
     ]);
 
-    const teamNames = Object.fromEntries(teams.map(team => [team.id, team.name]));
+    const teamNames = Object.fromEntries(
+      teams.map(team => [team.id, team.name])
+    );
+
     const tournamentNames = Object.fromEntries(
       tournaments.map(tournament => [tournament.id, tournament.name])
     );
-    const gameNames = Object.fromEntries(games.map(game => [game.id, game.name]));
+
+    const gameNames = Object.fromEntries(
+      games.map(game => [game.id, game.name])
+    );
 
     let path = '/matches/?sort=date_asc';
+
     if (date) {
       path += `&date=${encodeURIComponent(date)}`;
     }
@@ -124,15 +148,23 @@ async function loadMatches(date = '') {
       };
 
       list.appendChild(
-        createMatchCard(matchWithGame, teamNames, tournamentNames, gameNames)
+        createMatchCard(
+          matchWithGame,
+          teamNames,
+          tournamentNames,
+          gameNames
+        )
       );
     });
+
   } catch (error) {
     errorBox.textContent =
       'Не вдалося завантажити матчі. Перевір, чи запущений Django API. ' +
       error.message;
   }
 }
+
+// ---------- Фільтр матчів ----------
 
 document.getElementById('date').addEventListener('change', event => {
   loadMatches(event.target.value);
@@ -143,4 +175,47 @@ document.getElementById('reset').addEventListener('click', () => {
   loadMatches();
 });
 
+// ---------- JWT авторизація ----------
+
+const authButtons = document.getElementById('auth-buttons');
+const userPanel = document.getElementById('user-panel');
+const usernameDisplay = document.getElementById('username-display');
+
+async function updateAuthUI() {
+  // Поки перевіряємо токен, не показуємо кнопки.
+  authButtons.hidden = true;
+  userPanel.hidden = true;
+
+  try {
+    const response = await authenticatedFetch('/auth/me/');
+
+    if (!response.ok) {
+      throw new Error('Не вдалося отримати профіль.');
+    }
+
+    const user = await response.json();
+
+    usernameDisplay.textContent = user.username;
+
+    authButtons.hidden = true;
+    userPanel.hidden = false;
+
+  } catch {
+    authButtons.hidden = false;
+    userPanel.hidden = true;
+  }
+}
+
+// ---------- Вихід ----------
+
+document.getElementById('logout-btn').addEventListener('click', () => {
+  logout();
+  authButtons.hidden = false;
+  userPanel.hidden = true;
+  usernameDisplay.textContent = '';
+});
+
+// ---------- Запуск ----------
+
 loadMatches();
+updateAuthUI();

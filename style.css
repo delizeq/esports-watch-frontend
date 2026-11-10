@@ -32,6 +32,8 @@ a {
   text-decoration: none;
 }
 
+/* ---------- Шапка сайту ---------- */
+
 .topbar {
   min-height: 76px;
   padding: 14px max(5%, calc((100% - 1200px) / 2));
@@ -88,6 +90,8 @@ nav a.active {
   border-bottom: 2px solid var(--accent);
   padding-bottom: 7px;
 }
+
+/* ---------- Основний контент ---------- */
 
 main {
   width: min(1200px, 90%);
@@ -156,6 +160,8 @@ footer p {
   user-select: none;
 }
 
+/* ---------- Матчі ---------- */
+
 .matches-section {
   margin-bottom: 55px;
 }
@@ -196,6 +202,8 @@ h2 {
   box-shadow: 0 0 12px #37d6a080;
 }
 
+/* ---------- Фільтри ---------- */
+
 .filters {
   padding: 20px;
   margin-bottom: 18px;
@@ -234,6 +242,8 @@ input[type="date"]:focus {
   border-color: var(--accent);
 }
 
+/* ---------- Кнопки ---------- */
+
 button {
   min-height: 44px;
   padding: 10px 20px;
@@ -252,6 +262,8 @@ button:hover {
   transform: translateY(-1px);
   filter: brightness(1.12);
 }
+
+/* ---------- Картки матчів ---------- */
 
 .matches-list {
   display: grid;
@@ -341,6 +353,122 @@ button:hover {
   display: none;
 }
 
+/* ---------- Авторизація JWT ---------- */
+
+[hidden] {
+  display: none !important;
+}
+
+.auth-buttons,
+.user-panel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auth-buttons button,
+.user-panel button {
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+#register-btn {
+  border-color: transparent;
+  background: linear-gradient(135deg, #8170ff, #5549ed);
+}
+
+#username-display {
+  color: var(--accent-light);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.auth-section {
+  max-width: 480px;
+  margin: 30px auto 65px;
+}
+
+.auth-container {
+  padding: 30px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--panel);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+}
+
+.auth-container h2 {
+  margin: 0 0 22px;
+  text-align: center;
+  color: var(--text);
+}
+
+#auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#auth-form label {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+#auth-form input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  outline: none;
+  background: #0a1324;
+  color: var(--text);
+  font: inherit;
+}
+
+#auth-form input:focus {
+  border-color: var(--accent);
+}
+
+#email-field,
+#confirm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#auth-submit {
+  margin-top: 10px;
+}
+
+#auth-cancel {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+}
+
+#auth-message {
+  margin: 15px 0 0;
+  color: #ff8585;
+  font-size: 14px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+#auth-message:empty {
+  display: none;
+}
+
+/* ---------- Футер ---------- */
+
 footer {
   padding: 25px 5%;
   border-top: 1px solid var(--border);
@@ -356,11 +484,21 @@ footer p {
   font-size: 13px;
 }
 
-@media (max-width: 800px) {
+/* ---------- Адаптивність ---------- */
+
+@media (max-width: 900px) {
   .topbar {
     flex-wrap: wrap;
+    gap: 16px;
   }
 
+  .auth-buttons,
+  .user-panel {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 800px) {
   nav {
     width: 100%;
     justify-content: space-between;
@@ -421,5 +559,19 @@ footer p {
 
   .match-card {
     padding: 16px;
+  }
+
+  .auth-container {
+    padding: 20px;
+  }
+
+  .auth-buttons button,
+  .user-panel button {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .auth-section {
+    margin: 20px auto 45px;
   }
 }

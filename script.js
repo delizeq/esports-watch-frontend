@@ -7,10 +7,13 @@ const STATUS_LABELS = {
   finished: 'Завершено'
 };
 
+// ---------- Запити до Django API ----------
+
 async function getJson(path) {
   const response = await fetch(`${API}${path}`);
 
   let data;
+
   try {
     data = await response.json();
   } catch {
@@ -24,12 +27,16 @@ async function getJson(path) {
   return data;
 }
 
+// ---------- Створення HTML елементів ----------
+
 function createElement(tag, className, text = '') {
   const element = document.createElement(tag);
   element.className = className;
   element.textContent = text;
   return element;
 }
+
+// ---------- Картки матчів ----------
 
 function createMatchCard(match, teamNames, tournamentNames, gameNames) {
   const card = createElement('article', 'match-card');
@@ -85,8 +92,11 @@ function createMatchCard(match, teamNames, tournamentNames, gameNames) {
   );
 
   card.append(teams, info, status);
+
   return card;
 }
+
+// ---------- Завантаження матчів ----------
 
 async function loadMatches(date = '') {
   const list = document.getElementById('matches');
@@ -146,12 +156,15 @@ async function loadMatches(date = '') {
         )
       );
     });
+
   } catch (error) {
     errorBox.textContent =
       'Не вдалося завантажити матчі. Перевір, чи запущений Django API. ' +
       error.message;
   }
 }
+
+// ---------- Фільтр матчів ----------
 
 document.getElementById('date').addEventListener('change', event => {
   loadMatches(event.target.value);
@@ -162,63 +175,16 @@ document.getElementById('reset').addEventListener('click', () => {
   loadMatches();
 });
 
-loadMatches();
-
-
 // ---------- JWT авторизація ----------
 
-const authSection = document.getElementById('auth-section');
-const authForm = document.getElementById('auth-form');
-const authMessage = document.getElementById('auth-message');
 const authButtons = document.getElementById('auth-buttons');
 const userPanel = document.getElementById('user-panel');
-
-let authMode = 'login';
-
-function showAuthForm(mode) {
-  authMode = mode;
-  authForm.reset();
-  authMessage.textContent = '';
-
-  const isRegister = mode === 'register';
-
-  document.getElementById('auth-title').textContent =
-    isRegister ? 'Реєстрація' : 'Увійти';
-
-  document.getElementById('auth-submit').textContent =
-    isRegister ? 'Зареєструватися' : 'Увійти';
-
-  document.getElementById('email-field').hidden = !isRegister;
-  document.getElementById('confirm-field').hidden = !isRegister;
-
-  document.getElementById('auth-email').required = isRegister;
-  document.getElementById('auth-confirm').required = isRegister;
-
-  document.getElementById('auth-password').autocomplete =
-    isRegister ? 'new-password' : 'current-password';
-
-  authSection.hidden = false;
-  authSection.scrollIntoView({ behavior: 'smooth' });
-}
-
-function hideAuthForm() {
-  authSection.hidden = true;
-  authForm.reset();
-  authMessage.textContent = '';
-}
+const usernameDisplay = document.getElementById('username-display');
 
 async function updateAuthUI() {
-  let token = getAccessToken();
-
-  if (!token) {
-    token = await refreshAccessToken();
-  }
-
-  if (!token) {
-    authButtons.hidden = false;
-    userPanel.hidden = true;
-    return;
-  }
+  // Поки перевіряємо токен, не показуємо кнопки.
+  authButtons.hidden = true;
+  userPanel.hidden = true;
 
   try {
     const response = await authenticatedFetch('/auth/me/');
@@ -229,59 +195,27 @@ async function updateAuthUI() {
 
     const user = await response.json();
 
-    document.getElementById('username-display').textContent =
-      user.username;
+    usernameDisplay.textContent = user.username;
 
     authButtons.hidden = true;
     userPanel.hidden = false;
+
   } catch {
     authButtons.hidden = false;
     userPanel.hidden = true;
   }
 }
 
-document.getElementById('login-btn').addEventListener('click', () => {
-  showAuthForm('login');
-});
-
-document.getElementById('register-btn').addEventListener('click', () => {
-  showAuthForm('register');
-});
-
-document.getElementById('auth-cancel').addEventListener('click', () => {
-  hideAuthForm();
-});
+// ---------- Вихід ----------
 
 document.getElementById('logout-btn').addEventListener('click', () => {
   logout();
-  hideAuthForm();
-  updateAuthUI();
+  authButtons.hidden = false;
+  userPanel.hidden = true;
+  usernameDisplay.textContent = '';
 });
 
-authForm.addEventListener('submit', async event => {
-  event.preventDefault();
+// ---------- Запуск ----------
 
-  const username = document.getElementById('auth-username').value.trim();
-  const password = document.getElementById('auth-password').value;
-
-  authMessage.textContent = '';
-
-  try {
-    if (authMode === 'register') {
-      const email = document.getElementById('auth-email').value.trim();
-      const confirmation = document.getElementById('auth-confirm').value;
-
-      await register(username, email, password, confirmation);
-      await login(username, password);
-    } else {
-      await login(username, password);
-    }
-
-    hideAuthForm();
-    await updateAuthUI();
-  } catch (error) {
-    authMessage.textContent = error.message;
-  }
-});
-
+loadMatches();
 updateAuthUI();

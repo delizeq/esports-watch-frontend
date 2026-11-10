@@ -1,0 +1,101 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Мій профіль — Esports Watch</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <a class="logo" href="index.html">
+      <span class="logo-icon">E</span>
+      <span>Esports <b>Watch</b></span>
+    </a>
+
+    <nav>
+      <a href="index.html">Матчі</a>
+      <a class="active" href="profile.html">Мій профіль</a>
+    </nav>
+
+    <div class="user-panel">
+      <span id="profile-username"></span>
+      <button id="profile-logout" type="button">Вийти</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-content">
+        <span class="eyebrow">USER PROFILE</span>
+        <h1>Мій <span>профіль</span></h1>
+        <p>Ця сторінка доступна лише авторизованим користувачам.</p>
+      </div>
+      <div class="hero-decoration" aria-hidden="true">GG</div>
+    </section>
+
+    <section class="auth-section">
+      <div class="auth-container">
+        <h2>Інформація про користувача</h2>
+
+        <p><strong>Логін:</strong> <span id="user-name">Завантаження...</span></p>
+        <p><strong>Email:</strong> <span id="user-email">Завантаження...</span></p>
+        <p><strong>Ім'я:</strong> <span id="user-first-name">—</span></p>
+        <p><strong>Прізвище:</strong> <span id="user-last-name">—</span></p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a class="logo footer-logo" href="index.html">
+      Esports <b>Watch</b>
+    </a>
+    <p>Кіберспорт — ближче, ніж здається.</p>
+  </footer>
+
+  <script src="auth.js"></script>
+
+  <script>
+    async function loadProfile() {
+      try {
+        const response = await authenticatedFetch('/auth/me/');
+
+        if (!response.ok) {
+          throw new Error('Не вдалося завантажити профіль.');
+        }
+
+        const user = await response.json();
+
+        document.getElementById('profile-username').textContent =
+          user.username || '';
+
+        document.getElementById('user-name').textContent =
+          user.username || '—';
+
+        document.getElementById('user-email').textContent =
+          user.email || '—';
+
+        document.getElementById('user-first-name').textContent =
+          user.first_name || '—';
+
+        document.getElementById('user-last-name').textContent =
+          user.last_name || '—';
+
+      } catch (error) {
+        const returnTo = encodeURIComponent('profile.html');
+        window.location.replace(`login.html?next=${returnTo}`);
+      }
+    }
+
+    document.getElementById('profile-logout').addEventListener('click', () => {
+      logout();
+      window.location.replace('index.html');
+    });
+
+    loadProfile();
+  </script>
+
+</body>
+</html>

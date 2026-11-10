@@ -1,0 +1,111 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вхід — Esports Watch</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <a class="logo" href="index.html">
+      <span class="logo-icon">E</span>
+      <span>Esports <b>Watch</b></span>
+    </a>
+
+    <nav>
+      <a href="index.html">Матчі</a>
+      <a href="profile.html">Мій профіль</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="auth-section">
+      <div class="auth-container">
+        <h2>Вхід в акаунт</h2>
+
+        <form id="login-form">
+          <label for="username">Логін</label>
+          <input
+            type="text"
+            id="username"
+            autocomplete="username"
+            required
+          >
+
+          <label for="password">Пароль</label>
+          <input
+            type="password"
+            id="password"
+            autocomplete="current-password"
+            required
+          >
+
+          <button type="submit">Увійти</button>
+        </form>
+
+        <p id="login-error" role="alert"></p>
+
+        <p>
+          Немає акаунта?
+          <a id="register-link" href="register.html">
+            Зареєструватися
+          </a>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script src="auth.js"></script>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const next = params.get('next');
+
+    // Дозволяємо повернення лише на внутрішні сторінки.
+    const destination = next === 'profile.html'
+      ? 'profile.html'
+      : 'index.html';
+
+    document.getElementById('register-link').href =
+      `register.html?next=${encodeURIComponent(destination)}`;
+
+    async function checkExistingLogin() {
+      try {
+        const response = await authenticatedFetch('/auth/me/');
+
+        if (response.ok) {
+          window.location.replace(destination);
+        }
+      } catch {
+        // Користувач ще не авторизований.
+      }
+    }
+
+    document.getElementById('login-form').addEventListener(
+      'submit',
+      async event => {
+        event.preventDefault();
+
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        const errorBox = document.getElementById('login-error');
+
+        errorBox.textContent = '';
+
+        try {
+          await login(username, password);
+          window.location.replace(destination);
+        } catch (error) {
+          errorBox.textContent = error.message;
+        }
+      }
+    );
+
+    checkExistingLogin();
+  </script>
+
+</body>
+</html>

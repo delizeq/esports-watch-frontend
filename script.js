@@ -35,12 +35,15 @@ function createMatchCard(match, teamNames, tournamentNames, gameNames) {
   const card = createElement('article', 'match-card');
 
   const teams = createElement('div', 'teams');
+
   const team1 = createElement(
     'span',
     'team',
     teamNames[match.team1_id] || `Команда ${match.team1_id}`
   );
+
   const vs = createElement('span', 'vs', 'VS');
+
   const team2 = createElement(
     'span',
     'team',
@@ -50,6 +53,7 @@ function createMatchCard(match, teamNames, tournamentNames, gameNames) {
   teams.append(team1, vs, team2);
 
   const info = createElement('div', 'match-info');
+
   const tournament = createElement(
     'div',
     'info',
@@ -60,6 +64,7 @@ function createMatchCard(match, teamNames, tournamentNames, gameNames) {
   const game = createElement('div', 'info', `🎮 ${gameName}`);
 
   const date = new Date(match.start_time);
+
   const dateText = Number.isNaN(date.getTime())
     ? match.start_time
     : date.toLocaleString('uk-UA', {
@@ -68,9 +73,11 @@ function createMatchCard(match, teamNames, tournamentNames, gameNames) {
       });
 
   const time = createElement('div', 'info', `🕒 ${dateText}`);
+
   info.append(tournament, game, time);
 
   const statusLabel = STATUS_LABELS[match.status] || match.status;
+
   const status = createElement(
     'span',
     `match-status ${match.status}`,
@@ -95,13 +102,20 @@ async function loadMatches(date = '') {
       getJson('/games/')
     ]);
 
-    const teamNames = Object.fromEntries(teams.map(team => [team.id, team.name]));
+    const teamNames = Object.fromEntries(
+      teams.map(team => [team.id, team.name])
+    );
+
     const tournamentNames = Object.fromEntries(
       tournaments.map(tournament => [tournament.id, tournament.name])
     );
-    const gameNames = Object.fromEntries(games.map(game => [game.id, game.name]));
+
+    const gameNames = Object.fromEntries(
+      games.map(game => [game.id, game.name])
+    );
 
     let path = '/matches/?sort=date_asc';
+
     if (date) {
       path += `&date=${encodeURIComponent(date)}`;
     }
@@ -124,7 +138,12 @@ async function loadMatches(date = '') {
       };
 
       list.appendChild(
-        createMatchCard(matchWithGame, teamNames, tournamentNames, gameNames)
+        createMatchCard(
+          matchWithGame,
+          teamNames,
+          tournamentNames,
+          gameNames
+        )
       );
     });
   } catch (error) {
@@ -144,3 +163,125 @@ document.getElementById('reset').addEventListener('click', () => {
 });
 
 loadMatches();
+
+
+// ---------- JWT авторизація ----------
+
+const authSection = document.getElementById('auth-section');
+const authForm = document.getElementById('auth-form');
+const authMessage = document.getElementById('auth-message');
+const authButtons = document.getElementById('auth-buttons');
+const userPanel = document.getElementById('user-panel');
+
+let authMode = 'login';
+
+function showAuthForm(mode) {
+  authMode = mode;
+  authForm.reset();
+  authMessage.textContent = '';
+
+  const isRegister = mode === 'register';
+
+  document.getElementById('auth-title').textContent =
+    isRegister ? 'Реєстрація' : 'Увійти';
+
+  document.getElementById('auth-submit').textContent =
+    isRegister ? 'Зареєструватися' : 'Увійти';
+
+  document.getElementById('email-field').hidden = !isRegister;
+  document.getElementById('confirm-field').hidden = !isRegister;
+
+  document.getElementById('auth-email').required = isRegister;
+  document.getElementById('auth-confirm').required = isRegister;
+
+  document.getElementById('auth-password').autocomplete =
+    isRegister ? 'new-password' : 'current-password';
+
+  authSection.hidden = false;
+  authSection.scrollIntoView({ behavior: 'smooth' });
+}
+
+function hideAuthForm() {
+  authSection.hidden = true;
+  authForm.reset();
+  authMessage.textContent = '';
+}
+
+async function updateAuthUI() {
+  let token = getAccessToken();
+
+  if (!token) {
+    token = await refreshAccessToken();
+  }
+
+  if (!token) {
+    authButtons.hidden = false;
+    userPanel.hidden = true;
+    return;
+  }
+
+  try {
+    const response = await authenticatedFetch('/auth/me/');
+
+    if (!response.ok) {
+      throw new Error('Не вдалося отримати профіль.');
+    }
+
+    const user = await response.json();
+
+    document.getElementById('username-display').textContent =
+      user.username;
+
+    authButtons.hidden = true;
+    userPanel.hidden = false;
+  } catch {
+    authButtons.hidden = false;
+    userPanel.hidden = true;
+  }
+}
+
+document.getElementById('login-btn').addEventListener('click', () => {
+  showAuthForm('login');
+});
+
+document.getElementById('register-btn').addEventListener('click', () => {
+  showAuthForm('register');
+});
+
+document.getElementById('auth-cancel').addEventListener('click', () => {
+  hideAuthForm();
+});
+
+document.getElementById('logout-btn').addEventListener('click', () => {
+  logout();
+  hideAuthForm();
+  updateAuthUI();
+});
+
+authForm.addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const username = document.getElementById('auth-username').value.trim();
+  const password = document.getElementById('auth-password').value;
+
+  authMessage.textContent = '';
+
+  try {
+    if (authMode === 'register') {
+      const email = document.getElementById('auth-email').value.trim();
+      const confirmation = document.getElementById('auth-confirm').value;
+
+      await register(username, email, password, confirmation);
+      await login(username, password);
+    } else {
+      await login(username, password);
+    }
+
+    hideAuthForm();
+    await updateAuthUI();
+  } catch (error) {
+    authMessage.textContent = error.message;
+  }
+});
+
+updateAuthUI();

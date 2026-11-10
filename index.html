@@ -22,6 +22,16 @@
       <a href="#matches">Команди</a>
       <a href="#matches">Ігри</a>
     </nav>
+
+    <div class="auth-buttons" id="auth-buttons">
+      <button type="button" id="login-btn">Увійти</button>
+      <button type="button" id="register-btn">Реєстрація</button>
+    </div>
+
+    <div class="user-panel" id="user-panel" hidden>
+      <span id="username-display"></span>
+      <button type="button" id="logout-btn">Вийти</button>
+    </div>
   </header>
 
   <main>
@@ -41,7 +51,9 @@
           <h2>Матчі</h2>
           <p>Знайди потрібний матч і переглянь його деталі.</p>
         </div>
-        <span class="live-indicator"><span></span> Оновлення з API</span>
+        <span class="live-indicator">
+          <span></span> Оновлення з API
+        </span>
       </div>
 
       <div class="filters">
@@ -55,13 +67,72 @@
       <p id="error" class="message" role="status" aria-live="polite"></p>
       <div id="matches" class="matches-list"></div>
     </section>
+
+    <section class="auth-section" id="auth-section" hidden>
+      <div class="auth-container">
+        <h2 id="auth-title">Увійти</h2>
+
+        <form id="auth-form">
+          <label for="auth-username">Логін</label>
+          <input
+            type="text"
+            id="auth-username"
+            required
+            autocomplete="username"
+          >
+
+          <div id="email-field" hidden>
+            <label for="auth-email">Email</label>
+            <input
+              type="email"
+              id="auth-email"
+              autocomplete="email"
+            >
+          </div>
+
+          <label for="auth-password">Пароль</label>
+          <input
+            type="password"
+            id="auth-password"
+            required
+            autocomplete="current-password"
+          >
+
+          <div id="confirm-field" hidden>
+            <label for="auth-confirm">Підтвердження пароля</label>
+            <input
+              type="password"
+              id="auth-confirm"
+              autocomplete="new-password"
+            >
+          </div>
+
+          <button type="submit" id="auth-submit">
+            Увійти
+          </button>
+
+          <button type="button" id="auth-cancel">
+            Скасувати
+          </button>
+        </form>
+
+        <p
+          id="auth-message"
+          role="status"
+          aria-live="polite"
+        ></p>
+      </div>
+    </section>
   </main>
 
   <footer>
-    <a class="logo footer-logo" href="#">Esports <b>Watch</b></a>
+    <a class="logo footer-logo" href="#">
+      Esports <b>Watch</b>
+    </a>
     <p>Кіберспорт — ближче, ніж здається.</p>
   </footer>
 
+  <script src="auth.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
